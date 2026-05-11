@@ -1,33 +1,29 @@
-Model Scores — Train/Val/Holdout split by wafer_id
+Model Scores — Stratified group split by wafer_id (fail-rate balanced)
 ===================================================================
 
 Split sizes:
-  Train:   22106 dies from 3 wafers
-  Val:     14723 dies from 2 wafers
-  Holdout: 14738 dies from 2 wafers
+  Train:   22101 dies from 3 wafers ['DPK456-13-G6', 'DPK456-14-B6', 'DPK456-16-G4']
+  Val:     14733 dies from 2 wafers ['DPK456-11-C0', 'DPK456-17-B4']
+  Holdout: 14733 dies from 2 wafers ['DPK456-12-E3', 'DPK456-15-E1']
+
+Fail rates per split:
+  hot_part_fail:  Train=0.0390 | Val=0.0400 | Holdout=0.0411
+  cold_part_fail: Train=0.0426 | Val=0.0432 | Holdout=0.0445
 
 Threshold selected on validation set using business cost (FN×10 + FP×1).
 
---- hot_part_fail (Holdout, threshold=0.56) ---
-  Accuracy:    0.9608
-  F1 Macro:    0.6718
-  F1 Weighted: 0.9570
-  PR-AUC:      0.3306
-  Recall@0.8prec: 0.2477
-  Pass  — Precision: 0.97 | Recall: 0.99 | F1: 0.98 | Support: 14193
-  Fail  — Precision: 0.46 | Recall: 0.30 | F1: 0.36 | Support: 545
-  Val cost: 4291 (FN=406, FP=231)
-  Holdout cost: 3997 (FN=380×10 + FP=197×1)
+--- hot_part_fail (Holdout, threshold=0.54) ---
+  Accuracy:    0.9569
+  F1 Macro:    0.6779
+  F1 Weighted: 0.9559
+  PR-AUC:      0.3566
+  Recall@0.8prec: 0.2810
+  Holdout cost: 4343 (FN=412×10 + FP=223×1)
 
---- cold_part_fail (Holdout, threshold=0.52) ---
-  Accuracy:    0.9514
-  F1 Macro:    0.6534
-  F1 Weighted: 0.9490
-  PR-AUC:      0.3259
-  Recall@0.8prec: 0.2382
-  Pass  — Precision: 0.97 | Recall: 0.98 | F1: 0.97 | Support: 14146
-  Fail  — Precision: 0.37 | Recall: 0.30 | F1: 0.33 | Support: 592
-  Val cost: 4712 (FN=439, FP=322)
-  Holdout cost: 4442 (FN=414×10 + FP=302×1)
-
-Note: Threshold sweep table + cost curve added to dashboard (visualization only, scores unchanged).
+--- cold_part_fail (Holdout, threshold=0.61) ---
+  Accuracy:    0.9617
+  F1 Macro:    0.6880
+  F1 Weighted: 0.9588
+  PR-AUC:      0.3543
+  Recall@0.8prec: 0.2550
+  Holdout cost: 4795 (FN=470×10 + FP=95×1)

@@ -1,4 +1,3 @@
-- Use stratified splitting for binary part_fail targets to stabilize class proportions across train/test.
 - Tune imbalance handling with scale_pos_weight and compare against sample weights; keep the approach that yields best recall-cost tradeoff.
 - Perform hyperparameter optimization (Optuna/RandomizedSearchCV) for max_depth, learning_rate, n_estimators, min_child_weight, subsample, colsample_bytree, reg_alpha, reg_lambda.
 - Add early stopping with a validation set (eval_set + early_stopping_rounds) to reduce overfitting.
