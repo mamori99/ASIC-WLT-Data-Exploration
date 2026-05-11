@@ -1,0 +1,21 @@
+Model Scores — Train/Val/Holdout split by wafer_id (threshold=0.5)
+===================================================================
+
+Split sizes:
+  Train:   22106 dies from 3 wafers
+  Val:     14723 dies from 2 wafers
+  Holdout: 14738 dies from 2 wafers
+
+--- hot_part_fail (Holdout) ---
+  Accuracy:    0.9478
+  F1 Macro:    0.6428
+  F1 Weighted: 0.9485
+  Pass  — Precision: 0.97 | Recall: 0.97 | F1: 0.97 | Support: 14193
+  Fail  — Precision: 0.30 | Recall: 0.32 | F1: 0.31 | Support: 545
+
+--- cold_part_fail (Holdout) ---
+  Accuracy:    0.9467
+  F1 Macro:    0.6469
+  F1 Weighted: 0.9461
+  Pass  — Precision: 0.97 | Recall: 0.97 | F1: 0.97 | Support: 14146
+  Fail  — Precision: 0.33 | Recall: 0.31 | F1: 0.32 | Support: 592
