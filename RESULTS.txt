@@ -65,3 +65,47 @@ has BOTH hard_bin≠1 AND soft_bin≠1 — the bins are perfectly consistent. Th
 target labels are clean and unambiguous. Label noise is NOT a factor capping
 PR-AUC; the current ~0.37 PR-AUC reflects the genuine difficulty of predicting
 failures from CP2 features alone. No action needed.
+
+=== Investigation: Multi-target learning (OOF cross-prediction) ===
+
+Question: cold_part_fail and hot_part_fail are likely correlated. Can we use
+one target's out-of-fold prediction as a feature for the other?
+
+Target correlation:
+  Pearson: 0.9238
+  MCC:     0.9238
+  Agreement: 99.39%
+  Crosstab: both_pass=49,263 | cold_only=246 | hot_only=71 | both_fail=1,987
+  → Extremely correlated. 96.8% of failing dies fail BOTH cold and hot.
+
+Method:
+  1. Train independent XGBoost models (saved Optuna params) for each target
+  2. Generate leak-free OOF predictions: leave-one-wafer-out within training
+     set (3-fold), full-train model for val/holdout
+  3. Add other target's OOF probability as a 20th feature
+  4. Retrain with same Optuna params, evaluate on holdout
+
+Results:
+  Target               Metric     Baseline  Multi-tgt     Delta
+  ---------------------------------------------------------------
+  hot_part_fail        PR-AUC       0.3655     0.3776   +0.0120
+                       Cost           4311       4268       -43
+                       FN              415        414        -1
+                       FP              161        128       -33
+  cold_part_fail       PR-AUC       0.3668     0.3687   +0.0019
+                       Cost           4701       4667       -34
+                       FN              458        452        -6
+                       FP              121        147       +26
+  ---------------------------------------------------------------
+  TOTAL                Cost           9012       8935       -77
+
+  OOF feature importance: rank #1 in both models (0.100 for hot, 0.090 for cold)
+
+Conclusion: Multi-target OOF gives a modest improvement — total cost drops by
+77 (9012→8935), hot PR-AUC gains +0.012. The OOF feature becomes the single
+most important feature in both models, confirming the strong cross-target
+signal. However, the improvement is small because the targets are already
+92.4% correlated — the model can already infer much of this from shared CP2
+features. The added complexity (leave-one-wafer-out OOF generation, sequential
+training dependency) may not justify the modest gain for production use.
+NOT integrated into the main pipeline — marginal benefit vs complexity.

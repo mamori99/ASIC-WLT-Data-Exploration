@@ -13,7 +13,6 @@ Model Alternatives & Ensembles:
 Training Strategy:
 - Use leave-one-wafer-out cross-validation (LOWO-CV) instead of a single 3/2/2 split — with only 7 wafers, a single split is high-variance. Average metrics across 7 folds for more reliable estimates.
 - Try focal loss (gamma=1-3) instead of logloss — down-weights easy negatives, focuses XGBoost on hard-to-classify boundary dies where PR-AUC gains live.
-- Explore multi-target learning: cold_part_fail and hot_part_fail are likely correlated. Use one target's OOF prediction as a feature for the other, or train a single multi-output model.
 - Calibrate probabilities (Platt scaling / isotonic regression on validation set) before threshold selection — the threshold sweep assumes raw probabilities are monotonically aligned with true risk, but XGBoost probabilities can be poorly calibrated on imbalanced data.
 
 Data Quality:
