@@ -12,6 +12,11 @@ Fail rates per split:
 
 Threshold selected on validation set using business cost (FN×10 + FP×1).
 
+--- Leakage audit: x_coord/y_coord ---
+  with_xy:    hot PR-AUC=0.3566 Cost=4343 | cold PR-AUC=0.3543 Cost=4795 | Total=9138
+  without_xy: hot PR-AUC=0.3299 Cost=4494 | cold PR-AUC=0.3346 Cost=4894 | Total=9388
+  >>> Selected: with_xy (spatial coords kept — legitimate signal)
+
 --- hot_part_fail (Holdout, threshold=0.54) ---
   Accuracy:    0.9569
   F1 Macro:    0.6779

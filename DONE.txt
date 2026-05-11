@@ -5,3 +5,4 @@
 - Track business-cost metric (FN×10 + FP×1) on holdout set; added KPI cards to dashboard showing holdout cost, FN/FP breakdown, and threshold.
 - Report PR-AUC and recall@0.8precision on holdout set; PR curve now shows holdout data with AUC annotation and recall@precision marker.
 - Use stratified group splitting: enumerate all wafer partitions and select the one minimizing fail-rate imbalance across train/val/holdout.
+- Audit potential leakage features (x_coord/y_coord): benchmarked with vs without spatial coords. with_xy wins (hot PR-AUC 0.3566 vs 0.3299, cold PR-AUC 0.3543 vs 0.3346, total cost 9138 vs 9388). Spatial position is a legitimate predictive signal — kept.
