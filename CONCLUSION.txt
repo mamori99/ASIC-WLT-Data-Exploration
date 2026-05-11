@@ -1,0 +1,81 @@
+CONCLUSION — BMI420 ASIC WLT Data Exploration
+==============================================
+
+Goal:
+  Predict cold/hot part failures at wafer-level test (WLT) using only CP2
+  test features, enabling early screening before costly final test.
+
+Dataset:
+  7 wafers (DPK456-11 to -17), ~51,500 dies, 48 CP2 test parameters,
+  ~4% fail rate (hot: 3.99%, cold: 4.33%). Labels from hard_bin/soft_bin
+  — verified clean (zero ambiguous mismatches).
+
+Final Model:
+  XGBoost with Optuna-optimized hyperparameters (200 trials/target),
+  balanced sample_weight, 19 features (31 correlated features pruned),
+  logloss objective, early stopping as safety net.
+  Threshold selected on validation set by minimizing business cost (FN×10 + FP×1).
+  Wafer-level stratified split: 3 train / 2 val / 2 holdout wafers.
+
+Final Holdout Scores:
+  hot_part_fail:   PR-AUC=0.377, Cost=4242 (FN=410, FP=142, threshold=0.60)
+  cold_part_fail:  PR-AUC=0.359, Cost=4758 (FN=451, FP=248, threshold=0.57)
+  Total cost:      9000
+
+Score Progression (total holdout cost):
+  Baseline (100 trees, defaults):     9138
+  + Early stopping (500 trees):       9450  (worse — logloss overfitting)
+  + Correlation pruning (50→19 feat): 9450  (unchanged)
+  + Optuna HPO (50 trials):           9012  (-438 vs pruned baseline)
+  + Optuna HPO (200 trials):          9000  (-12 vs 50 trials)
+
+Key Findings:
+  1. Optuna HPO was the single largest improvement (total cost -438, PR-AUC
+     +0.045/+0.067). Lower learning rates and more regularization helped.
+  2. Spatial coordinates (x/y) carry legitimate predictive signal (cost -250
+     vs dropping them). Wafer position matters for failure prediction.
+  3. Feature reduction (50→19) via correlation pruning had zero cost — the
+     model is equally good with 62% fewer features.
+  4. Labels are clean — no hard_bin/soft_bin mismatches, no information loss
+     from the pivot aggregation.
+  5. Advanced techniques yielded diminishing returns:
+     - Multi-target OOF: -77 cost (not integrated, adds complexity)
+     - Neighbor spatial features: -26 cost (not integrated, 2.6× feature bloat)
+     - Focal loss: HURT performance (double-correction with sample_weight)
+     - 200 vs 50 Optuna trials: -12 cost (near convergence at 50)
+  6. PR-AUC of ~0.36-0.38 reflects a genuine difficulty ceiling — CP2
+     features alone have limited discriminative power for WLT failures.
+
+Limitations:
+  - Only 7 wafers from a single lot (DPK456). Generalization to other lots,
+    process conditions, or production volumes is unvalidated.
+  - The 3/2/2 wafer split is inherently high-variance with only 7 groups.
+    Metric estimates may shift with different wafer assignments.
+  - ~96% of failures are hard_bin=20 (soft_bin=2033). The model is effectively
+    learning to predict one dominant failure mode; rare failure types (bin 3,
+    17, 31) have very few examples.
+  - The cost model (FN×10, FP×1) is assumed; real business costs may differ
+    and would shift the optimal operating point.
+
+Future Work:
+  1. Leave-one-wafer-out CV (LOWO-CV): With only 7 wafers, a single split
+     is high-variance. LOWO-CV averages over 7 folds for more robust metric
+     estimates and identifies wafer-specific performance variation.
+  2. LightGBM / CatBoost: Alternative GBDT implementations may find
+     different optima. CatBoost's ordered boosting is designed for small
+     datasets. An ensemble (probability averaging or stacking) of multiple
+     GBDT flavors could improve calibration and PR-AUC.
+  3. Probability calibration: Platt scaling or isotonic regression on the
+     validation set before threshold selection. XGBoost probabilities may be
+     poorly calibrated under heavy class imbalance.
+  4. Engineered spatial features: Radial distance from wafer center, angular
+     position, edge proximity — these capture known radial process gradients
+     that raw x/y coordinates may not express efficiently.
+  5. Interaction features: Ratios or differences between top-importance
+     features to capture relationships that shallow trees may miss.
+  6. Multi-lot validation: Test the model on additional lots to assess
+     generalization. If lot-to-lot variation is high, lot-specific calibration
+     or domain adaptation may be needed.
+  7. Failure-mode stratification: Train separate models per dominant failure
+     mode (bin 20 vs others) to see if different CP2 signatures drive
+     different failure types.
