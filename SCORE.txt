@@ -12,6 +12,8 @@ Threshold selected on validation set using business cost (FN×10 + FP×1).
   Accuracy:    0.9608
   F1 Macro:    0.6718
   F1 Weighted: 0.9570
+  PR-AUC:      0.3306
+  Recall@0.8prec: 0.2477
   Pass  — Precision: 0.97 | Recall: 0.99 | F1: 0.98 | Support: 14193
   Fail  — Precision: 0.46 | Recall: 0.30 | F1: 0.36 | Support: 545
   Val cost: 4291 (FN=406, FP=231)
@@ -21,6 +23,8 @@ Threshold selected on validation set using business cost (FN×10 + FP×1).
   Accuracy:    0.9514
   F1 Macro:    0.6534
   F1 Weighted: 0.9490
+  PR-AUC:      0.3259
+  Recall@0.8prec: 0.2382
   Pass  — Precision: 0.97 | Recall: 0.98 | F1: 0.97 | Support: 14146
   Fail  — Precision: 0.37 | Recall: 0.30 | F1: 0.33 | Support: 592
   Val cost: 4712 (FN=439, FP=322)
