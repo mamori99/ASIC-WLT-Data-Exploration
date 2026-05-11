@@ -97,3 +97,37 @@ Used same Optuna params as baseline.
   Top neighbor features: nbr_std_y_coord, nbr_std_x_coord, nbr_mean_all
   >>> NOT integrated — negligible improvement (+0.002 hot PR-AUC, -0.001 cold PR-AUC, -26 cost)
       2.6× more features for essentially zero gain.
+
+--- AFTER: Focal loss (gamma=1,2,3) vs logloss ---
+Custom focal loss objective with sample_weight support. All gammas tested.
+
+  gamma=0 (logloss, baseline):
+    hot:  PR-AUC=0.3655 Cost=4311 | cold: PR-AUC=0.3668 Cost=4701 | Total=9012
+  gamma=1:
+    hot:  PR-AUC=0.3603 Cost=4364 | cold: PR-AUC=0.3486 Cost=4738 | Total=9102 (+90)
+  gamma=2:
+    hot:  PR-AUC=0.3366 Cost=4550 | cold: PR-AUC=0.2993 Cost=5008 | Total=9558 (+546)
+  gamma=3:
+    hot:  PR-AUC=0.2582 Cost=4797 | cold: PR-AUC=0.2420 Cost=5360 | Total=10157 (+1145)
+
+  >>> ALL gammas worse than logloss. Kept logloss (gamma=0).
+
+--- AFTER: Increased Optuna trials (50 → 200 trials/target) ---
+Deleted cached params, re-ran Optuna with 200 trials per target for finer convergence.
+
+  50-trial baseline:
+    hot:  PR-AUC=0.3655 Cost=4311 | cold: PR-AUC=0.3668 Cost=4701 | Total=9012
+  200 trials:
+    hot:  PR-AUC=0.3771 Cost=4242 (FN=410×10 + FP=142×1, threshold=0.60)
+    cold: PR-AUC=0.3590 Cost=4758 (FN=451×10 + FP=248×1, threshold=0.57)
+    Total=9000 (delta -12)
+
+  200-trial best params:
+    hot:  max_depth=5, lr=0.024, n_est=448, min_child_weight=8,
+          subsample=0.90, colsample=0.54, reg_alpha=1.0e-5, reg_lambda=3.4e-3
+    cold: max_depth=5, lr=0.056, n_est=234, min_child_weight=6,
+          subsample=0.90, colsample=0.34, reg_alpha=5.1e-7, reg_lambda=2.0e-3
+
+  >>> Marginal net improvement (-12 cost). Hot improved (+0.012 PR-AUC, -69 cost),
+      cold regressed (-0.008 PR-AUC, +57 cost). 4× more trials for negligible gain.
+      Kept 200-trial params as new baseline.

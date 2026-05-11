@@ -155,3 +155,82 @@ hot PR-AUC +0.002, cold PR-AUC -0.001. The model feature count grows from
 19 to 49 (2.6×) for essentially zero gain. The raw x_coord/y_coord already
 capture spatial signal adequately; averaging test values across neighbors adds
 minimal new information. NOT integrated — complexity not justified.
+
+=== Investigation: Focal loss (gamma=1,2,3) vs logloss ===
+
+Question: Can focal loss (down-weights easy negatives, focuses on hard
+boundary cases) improve PR-AUC over standard logloss?
+
+Method:
+  1. Custom XGBoost objective: focal loss with sample_weight support
+     focal_weight = (1-p)^gamma for y=1, p^gamma for y=0
+  2. Tested gamma = 0 (logloss baseline), 1, 2, 3
+  3. Same Optuna-optimized hyperparams, same splits, same sample_weight
+
+Results:
+  gamma  hot PR-AUC  hot Cost   cold PR-AUC  cold Cost   Total Cost  Δ vs g=0
+  ----   ----------  --------   -----------  ---------   ----------  -------
+  0      0.3655      4311       0.3668       4701        9012        —
+  1      0.3603      4364       0.3486       4738        9102        +90
+  2      0.3366      4550       0.2993       5008        9558        +546
+  3      0.2582      4797       0.2420       5360        10157       +1145
+
+  Recall@0.8precision:
+  gamma=0: hot=0.2645, cold=0.2641
+  gamma=1: hot=0.2562, cold=0.2489
+  gamma=2: hot=0.2182, cold=0.1664
+  gamma=3: hot=0.1256, cold=0.1069
+
+Conclusion: Focal loss HURTS across all gamma values. PR-AUC, cost, and
+recall@precision all degrade monotonically with increasing gamma. The likely
+cause: sample_weight (balanced) already up-weights the minority class ~24x;
+focal loss's additional down-weighting of easy negatives causes double
+correction, collapsing precision (FP explodes: 161→737 at gamma=3 for hot).
+Focal loss might help WITHOUT sample_weight, but sample_weight alone is
+superior. Kept standard logloss.
+
+=== Investigation: Increased Optuna trials (50 → 200 per target) ===
+
+Question: Does increasing Optuna trials from 50 to 200 yield meaningfully
+better hyperparameters and holdout performance?
+
+Method:
+  1. Deleted cached optuna_best_params.json to force full re-run
+  2. Ran Optuna with 200 trials per target (TPE sampler, val cost objective)
+  3. Compared holdout metrics vs 50-trial baseline
+
+Results:
+  Target               Metric     50 trials   200 trials    Delta
+  ---------------------------------------------------------------
+  hot_part_fail        PR-AUC       0.3655       0.3771   +0.0116
+                       Cost           4311         4242       -69
+                       FN              415          410        -5
+                       FP              161          142       -19
+                       Threshold      0.65         0.60
+  cold_part_fail       PR-AUC       0.3668       0.3590   -0.0078
+                       Cost           4701         4758       +57
+                       FN              458          451        -7
+                       FP              121          248      +127
+                       Threshold      0.66         0.57
+  ---------------------------------------------------------------
+  TOTAL                Cost           9012         9000       -12
+
+  200-trial best params:
+    hot:  max_depth=5, lr=0.024, n_est=448, min_child_weight=8,
+          subsample=0.90, colsample=0.54, reg_alpha=1.0e-5, reg_lambda=3.4e-3
+    cold: max_depth=5, lr=0.056, n_est=234, min_child_weight=6,
+          subsample=0.90, colsample=0.34, reg_alpha=5.1e-7, reg_lambda=2.0e-3
+
+  Key parameter shifts vs 50 trials:
+    hot:  lr 0.017→0.024 (+41%), n_est 375→448, min_child_weight 15→8
+    cold: n_est 89→234 (+163%), min_child_weight 19→6, colsample 0.43→0.34
+
+Conclusion: 4× more trials produced negligible net improvement (-12 total cost,
+<0.2%). Hot target improved (+0.012 PR-AUC, -69 cost) but cold regressed
+(-0.008 PR-AUC, +57 cost). The cold model shifted to a lower threshold (0.57
+vs 0.66) catching more true positives but at the expense of many more false
+positives (121→248). The 50-trial run had already found a near-optimal region;
+additional trials explored different parameter trade-offs rather than finding
+a strictly better solution. Kept 200-trial params as new baseline (slight
+net cost win), but diminishing returns are clear — further trial increases
+are unlikely to help.
