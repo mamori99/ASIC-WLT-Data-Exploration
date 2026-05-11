@@ -1,7 +1,6 @@
 Feature Engineering:
 - Engineer spatial features from x_coord/y_coord: radial distance from wafer center, angular position, distance to nearest edge. These capture known radial process gradients better than raw coordinates.
 - Create interaction/ratio features between top-importance features (e.g. ratios, differences) to capture non-linear relationships XGBoost might miss in shallow trees.
-- Add neighbor-based spatial features: local fail rate or mean test value in a k-nearest-die window to exploit spatial clustering of failures.
 - Experiment with the correlation pruning threshold (currently |Pearson| > 0.95) — try 0.90 or use mutual information to also catch non-linear redundancy. More aggressive pruning may hurt, but 0.95 might keep near-duplicates.
 
 Model Alternatives & Ensembles:

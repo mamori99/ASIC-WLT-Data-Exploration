@@ -84,3 +84,16 @@ Optuna beats defaults. Best models use lower learning rate, more regularization.
 
   Total cost — default: 9450 | optuna: 9058 (delta -392)
   >>> Selected: optuna
+
+--- AFTER: Neighbor-based spatial features (k=8 nearest dies) ---
+Computed per-wafer k=8 nearest neighbor mean + std for all 19 features.
+After correlation pruning: 19 → 49 features (32 neighbor features survived).
+Used same Optuna params as baseline.
+
+  hot_part_fail:  Baseline PR-AUC=0.3655 Cost=4311 | +Neighbor PR-AUC=0.3675 Cost=4293
+  cold_part_fail: Baseline PR-AUC=0.3668 Cost=4701 | +Neighbor PR-AUC=0.3659 Cost=4693
+  Total cost — baseline: 9012 | +neighbor: 8986 (delta -26)
+
+  Top neighbor features: nbr_std_y_coord, nbr_std_x_coord, nbr_mean_all
+  >>> NOT integrated — negligible improvement (+0.002 hot PR-AUC, -0.001 cold PR-AUC, -26 cost)
+      2.6× more features for essentially zero gain.

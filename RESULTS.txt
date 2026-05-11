@@ -109,3 +109,49 @@ signal. However, the improvement is small because the targets are already
 features. The added complexity (leave-one-wafer-out OOF generation, sequential
 training dependency) may not justify the modest gain for production use.
 NOT integrated into the main pipeline — marginal benefit vs complexity.
+
+=== Investigation: Neighbor-based spatial features (k=8 nearest dies) ===
+
+Question: Can k-nearest-die spatial features (mean/std of CP2 test values
+across neighbors on the same wafer) exploit spatial clustering of failures?
+
+Method:
+  1. For each die, find k=8 nearest neighbors using (x_coord, y_coord)
+     within the same wafer via cKDTree
+  2. Compute mean and std of all 19 surviving features across neighbors
+  3. Add 2 aggregate features: nbr_mean_all, nbr_std_all
+  4. Apply same |Pearson| > 0.95 correlation pruning
+  5. Train with same Optuna-optimized params, evaluate on holdout
+
+  Note: Only CP2 test features are used — no target leakage.
+
+Feature expansion:
+  Base features:    19
+  + Neighbor raw:   19×2 (mean+std) + 2 (aggregates) = 40
+  Total before prune: 59
+  After prune:        49 (32 neighbor features survived, 10 pruned)
+
+Results:
+  Target               Metric     Baseline  + Neighbor    Delta
+  ---------------------------------------------------------------
+  hot_part_fail        PR-AUC       0.3655     0.3675   +0.0020
+                       Cost           4311       4293       -18
+                       FN              415        417        +2
+                       FP              161        123       -38
+  cold_part_fail       PR-AUC       0.3668     0.3659   -0.0009
+                       Cost           4701       4693        -8
+                       FN              458        461        +3
+                       FP              121         83       -38
+  ---------------------------------------------------------------
+  TOTAL                Cost           9012       8986       -26
+
+  Top neighbor features by importance:
+    nbr_std_y_coord:  0.054 (hot) / 0.059 (cold)
+    nbr_std_x_coord:  0.050 (hot) / 0.050 (cold)
+    nbr_mean_all:     0.027 (hot) / 0.020 (cold)
+
+Conclusion: Negligible improvement — total cost drops by only 26 (9012→8986),
+hot PR-AUC +0.002, cold PR-AUC -0.001. The model feature count grows from
+19 to 49 (2.6×) for essentially zero gain. The raw x_coord/y_coord already
+capture spatial signal adequately; averaging test values across neighbors adds
+minimal new information. NOT integrated — complexity not justified.
