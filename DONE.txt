@@ -2,3 +2,4 @@
 - Add a true holdout set (separate wafers) for final unbiased evaluation; validation set used for threshold tuning/iteration.
 - Select decision threshold on validation set using business cost objective (FN×10 + FP×1); threshold no longer hardcoded.
 - Add threshold sweep table per target (threshold, recall, precision, FPR, FNR, cost) + cost curve to dashboard; selected operating point highlighted.
+- Track business-cost metric (FN×10 + FP×1) on holdout set; added KPI cards to dashboard showing holdout cost, FN/FP breakdown, and threshold.
