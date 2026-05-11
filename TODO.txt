@@ -1,0 +1,19 @@
+- Add a true holdout set from a different lot/time window for final validation; keep current test set only for model iteration.
+- Select decision threshold on a validation fold using a business objective (minimize false negatives with acceptable false positives), not directly on test.
+- Add threshold sweep table per target (threshold, recall, precision, FPR, FNR, expected cost) and choose an operating point explicitly.
+- Track business-cost metric in addition to ML metrics (for example: Cost = FN_cost * FN + FP_cost * FP).
+- Report PR-AUC and recall at fixed precision (e.g., recall@0.8 precision), since class imbalance makes accuracy less informative.
+- Use stratified splitting for binary part_fail targets to stabilize class proportions across train/test.
+- Tune imbalance handling with scale_pos_weight and compare against sample weights; keep the approach that yields best recall-cost tradeoff.
+- Perform hyperparameter optimization (Optuna/RandomizedSearchCV) for max_depth, learning_rate, n_estimators, min_child_weight, subsample, colsample_bytree, reg_alpha, reg_lambda.
+- Add early stopping with a validation set (eval_set + early_stopping_rounds) to reduce overfitting.
+- Calibrate predicted probabilities (Platt or isotonic) so threshold decisions are more reliable.
+- Replace blanket dropna on features/targets with explicit missing-value strategy (imputation + missingness indicators) to avoid discarding large data portions.
+- Audit potential leakage features (x_coord/y_coord and any tests that may indirectly encode downstream fail state) and benchmark with/without them.
+- Validate consistency of cold/hot bin mapping before drop_duplicates; detect conflicting labels per wafer_id/x_coord/y_coord and resolve explicitly.
+- Store full experiment artifacts (params, metrics, threshold, feature list, train/test sizes, timestamp) for reproducibility.
+- Save trained models and preprocessing metadata (label encoder classes, sanitized feature map) for consistent inference.
+- Add explainability outputs (SHAP summary and per-target top drivers) to support engineering decisions.
+- Extend dashboard with interactive threshold slider and live confusion matrix/precision/recall updates per target.
+- Add baseline comparisons (predict-all-pass, logistic regression, random forest) to quantify real lift from XGBoost.
+- Add uncertainty reporting (cross-validation mean/std and bootstrap confidence intervals) for key metrics.

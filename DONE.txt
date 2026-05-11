@@ -1,0 +1,1 @@
+- Use split strategy by wafer/lot instead of random row split (GroupShuffleSplit on wafer_id) to prevent leakage between train and test.
