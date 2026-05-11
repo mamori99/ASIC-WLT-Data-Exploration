@@ -44,3 +44,15 @@ Scores REGRESSED vs 100-tree baseline (overfitting that logloss can't detect).
 --- cold_part_fail (Holdout, threshold=0.47, trees=499) ---
   PR-AUC:      0.3164 (was 0.3543, delta -0.0379)
   Holdout cost: 4977 (FN=490×10 + FP=77×1)
+
+--- AFTER: Redundant feature removal (|Pearson| > 0.95) ---
+Dropped 31 highly correlated features, 0 near-constant. Features: 50 → 19.
+No regression — scores identical to 500-tree early stopping run.
+
+--- hot_part_fail (Holdout, threshold=0.32, 19 features, trees=499) ---
+  PR-AUC:      0.3379 (unchanged)
+  Holdout cost: 4473 (FN=429×10 + FP=183×1)
+
+--- cold_part_fail (Holdout, threshold=0.47, 19 features, trees=499) ---
+  PR-AUC:      0.3164 (unchanged)
+  Holdout cost: 4977 (FN=490×10 + FP=77×1)
