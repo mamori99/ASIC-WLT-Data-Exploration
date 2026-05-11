@@ -1,0 +1,67 @@
+=== Investigation: aggfunc='first' in pivot — does it lose information? ===
+
+Question: The CP2 pivot uses aggfunc='first'. If multiple test_result values
+exist per (die, test_txt), information is silently dropped. Could aggregating
+with mean/std/range add predictive signal?
+
+Findings:
+  CP2 rows:              2,475,216
+  Unique dies:           51,567
+  Unique test_txt:       48
+  Expected combos:       51,567 × 48 = 2,475,216
+  Rows per (die, test_txt): ALL = 1 (no duplicates)
+
+Conclusion: Every (wafer_id, x_coord, y_coord, test_txt) combination has
+exactly one row in the CP2 data. aggfunc='first' is equivalent to any other
+aggregation function — no information is lost. No action needed.
+
+=== Investigation: Label noise — hard_bin vs soft_bin mismatches ===
+
+Question: Do any dies have hard_bin=1 but soft_bin≠1 (or vice versa)?
+Such mismatches would be ambiguous labels — the current target definition
+(part_fail = NOT(hard_bin==1 AND soft_bin==1)) would label them as fails,
+but they might be borderline/mislabeled, capping achievable PR-AUC.
+
+Findings (51,567 dies total):
+
+  COLD bins:
+    hard_bin values: {1, 3, 17, 20, 31}
+    soft_bin values: {1, 110, 317, 1755, 1762, 1765, 1766, 2033}
+
+    hard_bin=1 AND soft_bin=1 (pass):        49,334
+    hard_bin≠1 AND soft_bin≠1 (clear fail):   2,233
+    hard_bin=1 BUT soft_bin≠1 (ambiguous):        0
+    hard_bin≠1 BUT soft_bin=1 (ambiguous):        0
+    Missing cold bin data (NaN):                  1
+
+    Fail breakdown by hard_bin:
+      hard_bin=20, soft_bin=2033:  1,923 dies (86.1% of cold fails)
+      hard_bin=17, soft_bins={1755,1762,1765,1766}: 243 dies (10.9%)
+      hard_bin=31, soft_bin=110:     65 dies (2.9%)
+      hard_bin=3,  soft_bin=317:      1 die  (0.04%)
+
+  HOT bins:
+    hard_bin values: {1, 3, 17, 20, 31}
+    soft_bin values: {1, 110, 305, 317, 1755, 1762, 2033}
+
+    hard_bin=1 AND soft_bin=1 (pass):        49,509
+    hard_bin≠1 AND soft_bin≠1 (clear fail):   2,058
+    hard_bin=1 BUT soft_bin≠1 (ambiguous):        0
+    hard_bin≠1 BUT soft_bin=1 (ambiguous):        0
+    Missing hot bin data (NaN):                   5
+
+    Fail breakdown by hard_bin:
+      hard_bin=20, soft_bin=2033:  1,923 dies (93.4% of hot fails)
+      hard_bin=31, soft_bin=110:     63 dies (3.1%)
+      hard_bin=17, soft_bins={1755,1762}: 56 dies (2.7%)
+      hard_bin=3,  soft_bins={305,317}:   11 dies (0.5%)
+
+  Target summary:
+    cold_part_fail: 2,233 fails (4.33%), 0 ambiguous (0.0%)
+    hot_part_fail:  2,058 fails (3.99%), 0 ambiguous (0.0%)
+
+Conclusion: Zero label noise from hard_bin/soft_bin mismatches. Every fail die
+has BOTH hard_bin≠1 AND soft_bin≠1 — the bins are perfectly consistent. The
+target labels are clean and unambiguous. Label noise is NOT a factor capping
+PR-AUC; the current ~0.37 PR-AUC reflects the genuine difficulty of predicting
+failures from CP2 features alone. No action needed.

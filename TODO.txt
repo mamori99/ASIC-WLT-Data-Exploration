@@ -1,2 +1,20 @@
-- Add SHAP explainability (summary plot + per-target top drivers) to support engineering root-cause analysis.
-- Add baseline comparisons (predict-all-pass, logistic regression, random forest) to quantify actual lift from XGBoost.
+Feature Engineering:
+- Engineer spatial features from x_coord/y_coord: radial distance from wafer center, angular position, distance to nearest edge. These capture known radial process gradients better than raw coordinates.
+- Create interaction/ratio features between top-importance features (e.g. ratios, differences) to capture non-linear relationships XGBoost might miss in shallow trees.
+- Add neighbor-based spatial features: local fail rate or mean test value in a k-nearest-die window to exploit spatial clustering of failures.
+- Experiment with the correlation pruning threshold (currently |Pearson| > 0.95) — try 0.90 or use mutual information to also catch non-linear redundancy. More aggressive pruning may hurt, but 0.95 might keep near-duplicates.
+
+Model Alternatives & Ensembles:
+- Try LightGBM as an alternative — often faster, competitive on tabular data, native GOSS sampling helps with imbalance. Run same Optuna + cost-objective pipeline and compare PR-AUC/cost.
+- Try CatBoost — ordered boosting reduces overfitting on small datasets (7 wafers), handles class imbalance natively. Compare with same evaluation framework.
+- Ensemble (probability averaging) of XGBoost + LightGBM + CatBoost — blended probabilities often improve calibration and PR-AUC on imbalanced problems.
+- Try a stacking meta-learner (logistic regression on base model out-of-fold predictions) for a more principled ensemble.
+
+Training Strategy:
+- Use leave-one-wafer-out cross-validation (LOWO-CV) instead of a single 3/2/2 split — with only 7 wafers, a single split is high-variance. Average metrics across 7 folds for more reliable estimates.
+- Try focal loss (gamma=1-3) instead of logloss — down-weights easy negatives, focuses XGBoost on hard-to-classify boundary dies where PR-AUC gains live.
+- Explore multi-target learning: cold_part_fail and hot_part_fail are likely correlated. Use one target's OOF prediction as a feature for the other, or train a single multi-output model.
+- Calibrate probabilities (Platt scaling / isotonic regression on validation set) before threshold selection — the threshold sweep assumes raw probabilities are monotonically aligned with true risk, but XGBoost probabilities can be poorly calibrated on imbalanced data.
+
+Data Quality:
+- Increase Optuna trials (50 → 150-200) for finer HPO convergence, especially if trying new model types.
