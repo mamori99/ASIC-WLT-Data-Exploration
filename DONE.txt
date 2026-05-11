@@ -6,3 +6,4 @@
 - Report PR-AUC and recall@0.8precision on holdout set; PR curve now shows holdout data with AUC annotation and recall@precision marker.
 - Use stratified group splitting: enumerate all wafer partitions and select the one minimizing fail-rate imbalance across train/val/holdout.
 - Audit potential leakage features (x_coord/y_coord): benchmarked with vs without spatial coords. with_xy wins (hot PR-AUC 0.3566 vs 0.3299, cold PR-AUC 0.3543 vs 0.3346, total cost 9138 vs 9388). Spatial position is a legitimate predictive signal — kept.
+- Add early stopping (eval_set + early_stopping_rounds=20, n_estimators raised to 500). Early stopping did NOT trigger — val logloss keeps decreasing monotonically across all 4 models (trees used: 498-499/500). Holdout scores regressed vs 100-tree baseline (hot PR-AUC 0.3379 vs 0.3566, cold 0.3164 vs 0.3543) confirming overfitting that logloss cannot detect. Mechanism kept as safety net.

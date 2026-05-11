@@ -17,7 +17,7 @@ Threshold selected on validation set using business cost (FN×10 + FP×1).
   without_xy: hot PR-AUC=0.3299 Cost=4494 | cold PR-AUC=0.3346 Cost=4894 | Total=9388
   >>> Selected: with_xy (spatial coords kept — legitimate signal)
 
---- hot_part_fail (Holdout, threshold=0.54) ---
+--- hot_part_fail (Holdout, threshold=0.54) --- [BASELINE: 100 trees, no early stopping]
   Accuracy:    0.9569
   F1 Macro:    0.6779
   F1 Weighted: 0.9559
@@ -25,10 +25,22 @@ Threshold selected on validation set using business cost (FN×10 + FP×1).
   Recall@0.8prec: 0.2810
   Holdout cost: 4343 (FN=412×10 + FP=223×1)
 
---- cold_part_fail (Holdout, threshold=0.61) ---
+--- cold_part_fail (Holdout, threshold=0.61) --- [BASELINE: 100 trees, no early stopping]
   Accuracy:    0.9617
   F1 Macro:    0.6880
   F1 Weighted: 0.9588
   PR-AUC:      0.3543
   Recall@0.8prec: 0.2550
   Holdout cost: 4795 (FN=470×10 + FP=95×1)
+
+--- AFTER: Early stopping (n_estimators=500, early_stopping_rounds=20) ---
+Early stopping did NOT trigger. All models used 498-499/500 trees.
+Scores REGRESSED vs 100-tree baseline (overfitting that logloss can't detect).
+
+--- hot_part_fail (Holdout, threshold=0.32, trees=499) ---
+  PR-AUC:      0.3379 (was 0.3566, delta -0.0187)
+  Holdout cost: 4473 (FN=429×10 + FP=183×1)
+
+--- cold_part_fail (Holdout, threshold=0.47, trees=499) ---
+  PR-AUC:      0.3164 (was 0.3543, delta -0.0379)
+  Holdout cost: 4977 (FN=490×10 + FP=77×1)
