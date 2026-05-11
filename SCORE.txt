@@ -1,4 +1,4 @@
-Model Scores — Train/Val/Holdout split by wafer_id (threshold=0.5)
+Model Scores — Train/Val/Holdout split by wafer_id
 ===================================================================
 
 Split sizes:
@@ -6,16 +6,20 @@ Split sizes:
   Val:     14723 dies from 2 wafers
   Holdout: 14738 dies from 2 wafers
 
---- hot_part_fail (Holdout) ---
-  Accuracy:    0.9478
-  F1 Macro:    0.6428
-  F1 Weighted: 0.9485
-  Pass  — Precision: 0.97 | Recall: 0.97 | F1: 0.97 | Support: 14193
-  Fail  — Precision: 0.30 | Recall: 0.32 | F1: 0.31 | Support: 545
+Threshold selected on validation set using business cost (FN×10 + FP×1).
 
---- cold_part_fail (Holdout) ---
-  Accuracy:    0.9467
-  F1 Macro:    0.6469
-  F1 Weighted: 0.9461
-  Pass  — Precision: 0.97 | Recall: 0.97 | F1: 0.97 | Support: 14146
-  Fail  — Precision: 0.33 | Recall: 0.31 | F1: 0.32 | Support: 592
+--- hot_part_fail (Holdout, threshold=0.56) ---
+  Accuracy:    0.9608
+  F1 Macro:    0.6718
+  F1 Weighted: 0.9570
+  Pass  — Precision: 0.97 | Recall: 0.99 | F1: 0.98 | Support: 14193
+  Fail  — Precision: 0.46 | Recall: 0.30 | F1: 0.36 | Support: 545
+  Val cost: 4291 (FN=406, FP=231)
+
+--- cold_part_fail (Holdout, threshold=0.52) ---
+  Accuracy:    0.9514
+  F1 Macro:    0.6534
+  F1 Weighted: 0.9490
+  Pass  — Precision: 0.97 | Recall: 0.98 | F1: 0.97 | Support: 14146
+  Fail  — Precision: 0.37 | Recall: 0.30 | F1: 0.33 | Support: 592
+  Val cost: 4712 (FN=439, FP=322)

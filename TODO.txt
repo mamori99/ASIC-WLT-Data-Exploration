@@ -1,4 +1,3 @@
-- Select decision threshold on a validation fold using a business objective (minimize false negatives with acceptable false positives), not directly on test.
 - Add threshold sweep table per target (threshold, recall, precision, FPR, FNR, expected cost) and choose an operating point explicitly.
 - Track business-cost metric in addition to ML metrics (for example: Cost = FN_cost * FN + FP_cost * FP).
 - Report PR-AUC and recall at fixed precision (e.g., recall@0.8 precision), since class imbalance makes accuracy less informative.
