@@ -23,3 +23,5 @@ Threshold selected on validation set using business cost (FN×10 + FP×1).
   Pass  — Precision: 0.97 | Recall: 0.98 | F1: 0.97 | Support: 14146
   Fail  — Precision: 0.37 | Recall: 0.30 | F1: 0.33 | Support: 592
   Val cost: 4712 (FN=439, FP=322)
+
+Note: Threshold sweep table + cost curve added to dashboard (visualization only, scores unchanged).
