@@ -65,3 +65,22 @@ sample_weight wins on all metrics. scale_pos_weight kept.
   cold_part_fail: SW PR-AUC=0.3164 Cost=4977 | SPW PR-AUC=0.2617 Cost=5211
   Total cost — SW: 9450 | SPW: 9926
   >>> Selected: sample_weight (no change)
+
+--- AFTER: Hyperparameter optimization (Optuna, 50 trials/target) ---
+Optuna beats defaults. Best models use lower learning rate, more regularization.
+
+  hot_part_fail best params: max_depth=5, lr=0.017, n_est=375, min_child_weight=15,
+    subsample=0.92, colsample=0.56, reg_alpha=2.8e-6, reg_lambda=6.1e-5
+  cold_part_fail best params: max_depth=5, lr=0.054, n_est=89, min_child_weight=19,
+    subsample=0.90, colsample=0.43, reg_alpha=4.0e-7, reg_lambda=2.5e-6
+
+--- hot_part_fail (Holdout, threshold=0.65, Optuna-optimized) ---
+  PR-AUC:      0.3824 (was 0.3379, delta +0.0445)
+  Holdout cost: 4358 (FN=425×10 + FP=108×1)
+
+--- cold_part_fail (Holdout, threshold=0.66, Optuna-optimized) ---
+  PR-AUC:      0.3835 (was 0.3164, delta +0.0671)
+  Holdout cost: 4700 (FN=456×10 + FP=140×1)
+
+  Total cost — default: 9450 | optuna: 9058 (delta -392)
+  >>> Selected: optuna

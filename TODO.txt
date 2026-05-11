@@ -1,3 +1,2 @@
-- Perform hyperparameter optimization (Optuna/RandomizedSearchCV) for max_depth, learning_rate, n_estimators, min_child_weight, subsample, colsample_bytree, reg_alpha, reg_lambda — use val cost as objective.
 - Add SHAP explainability (summary plot + per-target top drivers) to support engineering root-cause analysis.
 - Add baseline comparisons (predict-all-pass, logistic regression, random forest) to quantify actual lift from XGBoost.
