@@ -56,3 +56,12 @@ No regression — scores identical to 500-tree early stopping run.
 --- cold_part_fail (Holdout, threshold=0.47, 19 features, trees=499) ---
   PR-AUC:      0.3164 (unchanged)
   Holdout cost: 4977 (FN=490×10 + FP=77×1)
+
+--- AFTER: Imbalance handling comparison ---
+Compared sample_weight (balanced) vs scale_pos_weight (~24.7).
+sample_weight wins on all metrics. scale_pos_weight kept.
+
+  hot_part_fail:  SW PR-AUC=0.3379 Cost=4473 | SPW PR-AUC=0.2765 Cost=4715
+  cold_part_fail: SW PR-AUC=0.3164 Cost=4977 | SPW PR-AUC=0.2617 Cost=5211
+  Total cost — SW: 9450 | SPW: 9926
+  >>> Selected: sample_weight (no change)
