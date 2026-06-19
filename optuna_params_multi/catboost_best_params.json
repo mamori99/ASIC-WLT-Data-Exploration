@@ -1,0 +1,9 @@
+{
+  "WLT_fail": {
+    "iterations": 261,
+    "depth": 3,
+    "learning_rate": 0.2307785791981754,
+    "l2_leaf_reg": 5.522573682052973,
+    "bagging_temperature": 0.461441105648478
+  }
+}

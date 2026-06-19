@@ -1,0 +1,9 @@
+{
+  "WLT_fail": {
+    "n_estimators": 365,
+    "max_depth": 13,
+    "min_samples_split": 12,
+    "min_samples_leaf": 9,
+    "max_features": 0.3243493219731763
+  }
+}

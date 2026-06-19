@@ -1,5 +1,12 @@
 {
-    "chat.tools.terminal.autoApprove": {
-        "conda": true
+  "chat.tools.terminal.autoApprove": {
+    "conda": true
+  },
+  "python-envs.pythonProjects": [
+    {
+      "path": ".",
+      "envManager": "ms-python.python:conda",
+      "packageManager": "ms-python.python:conda"
     }
+  ]
 }

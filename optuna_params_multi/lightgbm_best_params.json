@@ -1,0 +1,13 @@
+{
+  "WLT_fail": {
+    "max_depth": 9,
+    "learning_rate": 0.07234559551637333,
+    "n_estimators": 113,
+    "num_leaves": 103,
+    "min_child_samples": 26,
+    "subsample": 0.999979148305754,
+    "colsample_bytree": 0.7948296011768131,
+    "reg_alpha": 0.04229172880216527,
+    "reg_lambda": 1.9421558605580571
+  }
+}

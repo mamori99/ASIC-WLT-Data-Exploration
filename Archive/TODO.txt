@@ -1,0 +1,16 @@
+Feature Engineering:
+- Engineer spatial features from x_coord/y_coord: radial distance from wafer center, angular position, distance to nearest edge. These capture known radial process gradients better than raw coordinates.
+- Create interaction/ratio features between top-importance features (e.g. ratios, differences) to capture non-linear relationships XGBoost might miss in shallow trees.
+- Experiment with the correlation pruning threshold (currently |Pearson| > 0.95) — try 0.90 or use mutual information to also catch non-linear redundancy. More aggressive pruning may hurt, but 0.95 might keep near-duplicates.
+
+Model Alternatives & Ensembles:
+- Try LightGBM as an alternative — often faster, competitive on tabular data, native GOSS sampling helps with imbalance. Run same Optuna + cost-objective pipeline and compare PR-AUC/cost.
+- Try CatBoost — ordered boosting reduces overfitting on small datasets (7 wafers), handles class imbalance natively. Compare with same evaluation framework.
+- Ensemble (probability averaging) of XGBoost + LightGBM + CatBoost — blended probabilities often improve calibration and PR-AUC on imbalanced problems.
+- Try a stacking meta-learner (logistic regression on base model out-of-fold predictions) for a more principled ensemble.
+
+Training Strategy:
+- Use leave-one-wafer-out cross-validation (LOWO-CV) instead of a single 3/2/2 split — with only 7 wafers, a single split is high-variance. Average metrics across 7 folds for more reliable estimates.
+- Calibrate probabilities (Platt scaling / isotonic regression on validation set) before threshold selection — the threshold sweep assumes raw probabilities are monotonically aligned with true risk, but XGBoost probabilities can be poorly calibrated on imbalanced data.
+
+Data Quality:

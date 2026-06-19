@@ -1,0 +1,101 @@
+================================================================================
+NOTEBOOK SUMMARY: map_WLT_value_to_CQ_slippage.ipynb
+================================================================================
+
+PURPOSE
+-------
+Map Wafer Level Test (WLT) accelerometer noise measurements to Customer
+Qualification (CQ) slippage values, identify parts failing at different test
+stages (CP2/CP3/CP4), and investigate whether CP3 failures correlate with a
+temperature-dependent drift (slope) visible across test insertions.
+
+DATASET
+-------
+- Source: 7 parquet files (DPK456_11 … DPK456_17) from the BMI420 ASIC
+  evaluation network share.
+- Contains per-die test results across multiple wafer probe insertions:
+    CP2 (25 °C, room temp), CP3 (0 °C, low temp), CP4 (65 °C, high temp).
+- Tests of interest: accelerometer noise standard-deviation and mean
+  measurements filtered by patterns T17_62 / T17_65 with ACC and SD / MEAN.
+
+PROCESSING STEPS
+----------------
+1. DATA LOADING & FILTERING
+   - Concatenate 7 lot-level parquet files into one DataFrame.
+   - Keep only rows whose test_txt matches the accelerometer noise tests
+     (T17_62/T17_65 × ACC × SD/MEAN) plus hard_bin.
+
+2. USN (UNIQUE SERIAL NUMBER) CREATION
+   - Construct a per-die identifier from waferid_norm, x_coord, y_coord
+     so parts can be tracked across CP2/CP3/CP4 insertions.
+
+3. TEST NAME NORMALISATION
+   - Strip _CP3 / _CP4 suffixes so the same physical test aligns across
+     insertions.
+   - Remap axis channels (X→Y, Y→Z, Z→X) to match the ASIC orientation
+     convention.
+   - Extract metadata columns: axis (X/Y/Z), frequency mode (F0/F3/F5/F7),
+     and a canonical test_mode string.
+
+4. WLT → CQ MAPPING
+   - Linear correlation: WLT = 2250 × CQ + 20.5
+     ⟹ CQ = (WLT − 20.5) / 2250
+   - Applied to every test_result to produce a CQ_mapped column.
+
+5. LIMIT DEFINITION (BMI423 reference)
+   - HPM mode:  WLT RT = 330,   CQ RT = 0.11975
+   - NORM mode: WLT RT = 650,   CQ RT = 0.201
+   - CP3 / CP4 limits = 1.25 × RT limit (temperature guard-band).
+
+6. FAIL CLASSIFICATION
+   - For F3_ACCGMN_SD test, a part is labelled:
+       CP2 fail  – exceeds HPM WLT limit at CP2
+       CP3 fail  – exceeds HPM WLT_CP3 limit at CP3
+       CP4 fail  – exceeds HPM WLT_CP4 limit at CP4
+       Pass      – none of the above                                                                 
+   - Only hard_bin ∈ {1, 17} parts are evaluated.
+
+7. DISTRIBUTION ANALYSIS (Gaussian histograms)
+   - For each temperature point (RT / LT / HT), overlaid histograms of
+     CQ_mapped are plotted, coloured by WLT_fail group, faceted by axis.
+   - Two histogram modes per temperature:
+       a) % of total parts  – shows absolute contribution of each group.
+       b) % within group    – shows shape of each group's distribution.
+   - A vertical dashed line marks the HPM CQ limit.
+   - Outputs saved as HTML files under slippage_estimation_from_WLT/.
+
+8. SLOPE (DRIFT) CORRELATION ANALYSIS
+   - For ACCGMN tests, pivot test_result by flow_id → columns CP2, CP3, CP4.
+   - Compute slope = CP2 − CP4 (temperature-dependent drift).
+   - Reclassify parts:
+       CP2          – failed at CP2
+       CP4          – failed at CP4
+       CP3_slope    – did not fail CP2/CP4 but has positive slope
+       CP3_real_meas – failed CP3 and slope ≤ 0 (genuine cold failure)
+       Pass         – everything else
+   - Report the percentage of all parts that have a positive slope.
+   - Line plot of test_result vs. flow_id (CP3→CP2→CP4) for failing parts,
+     faceted by axis and test_mode, with the CP3 limit line overlaid.
+   - Output saved as wlt_slope.html.
+
+KEY OUTPUTS
+-----------
+- acc_std_mean_CP2_CP3_CP4.parquet        – filtered accelerometer noise data
+- slippage_estimation_from_WLT/
+    *_CP2_overall_group.html               – RT histogram (% total)
+    *_CP2.html                             – RT histogram (% within group)
+    *_CP3_overall_group.html               – LT histogram (% total)
+    *_CP3.html                             – LT histogram (% within group)
+    *_CP4_overall_group.html               – HT histogram (% total)
+    *_CP4.html                             – HT histogram (% within group)
+- wlt_slope.html                           – slope correlation line chart
+
+CONCLUSIONS SUPPORTED
+---------------------
+- The CQ mapping allows estimating how close production parts are to CQ
+  slippage limits using only WLT data.
+- The slope analysis helps distinguish CP3 failures that are caused by a
+  genuine cold-temperature sensitivity from those that are artefacts of a
+  monotonic drift visible across all three temperature insertions.
+- Parts with a positive CP2−CP4 slope that also fail CP3 may be flagged as
+  drift-driven rather than true cold outliers.
